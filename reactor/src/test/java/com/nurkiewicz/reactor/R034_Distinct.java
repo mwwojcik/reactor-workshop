@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 import static java.time.Duration.ofMillis;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R034_Distinct {
 
 	private static final Logger log = LoggerFactory.getLogger(R034_Distinct.class);
@@ -61,6 +61,9 @@ public class R034_Distinct {
 	@Test
 	public void distinctWordSequences() throws Exception {
 		//when
+		/*
+		Bieżące zdarzenie porównuje x po poprzednim wyemitowanym !!!!
+		 */
 		final Flux<String> distinct = words.distinctUntilChanged();
 
 		//then
@@ -81,8 +84,13 @@ public class R034_Distinct {
 		//given
 		final Flux<Weather> measurements = WeatherService.measurements();
 
+		/*
+		Weather::getTemperature - cecha która mówi o unikalności,
+		2. predykat który mówi kiedy dwie liczby są równe (prev,current)->prev-current<0.5)
+		 */
 		//when
-		final Flux<Weather> changes = measurements;
+		final Flux<Weather> changes = measurements.distinctUntilChanged(Weather::getTemperature,
+				(prev,current)->Math.abs(prev-current)<0.5);
 
 		//then
 		changes

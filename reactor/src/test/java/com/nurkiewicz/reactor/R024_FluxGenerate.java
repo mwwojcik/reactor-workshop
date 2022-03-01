@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 import static java.math.BigInteger.ONE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R024_FluxGenerate {
 
 	private static final Logger log = LoggerFactory.getLogger(R024_FluxGenerate.class);

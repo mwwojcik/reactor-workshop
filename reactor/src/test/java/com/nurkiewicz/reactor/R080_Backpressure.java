@@ -13,7 +13,7 @@ import reactor.core.publisher.Hooks;
 
 import static reactor.core.scheduler.Schedulers.newBoundedElastic;
 
-@Ignore
+
 public class R080_Backpressure {
 
     private static final Logger log = LoggerFactory.getLogger(R080_Backpressure.class);

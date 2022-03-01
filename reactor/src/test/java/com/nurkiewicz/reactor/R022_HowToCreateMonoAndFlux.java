@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R022_HowToCreateMonoAndFlux {
 
 	private static final Logger log = LoggerFactory.getLogger(R022_HowToCreateMonoAndFlux.class);

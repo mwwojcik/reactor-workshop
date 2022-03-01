@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 import static java.time.Duration.ofSeconds;
 import static reactor.test.StepVerifier.withVirtualTime;
 
-@Ignore
+
 public class R070_VirtualClock {
 
 	private static final Logger log = LoggerFactory.getLogger(R070_VirtualClock.class);
@@ -28,7 +28,7 @@ public class R070_VirtualClock {
 
 	/**
 	 * TODO Apply {@link Mono#timeout(Duration)} of 1 second to a return value from {@link #longRunning()} method and verify it works.
-	 * Warning: {@link reactor.test.StepVerifier.LastStep#verifyTimeout(java.time.Duration)} doesn't verify {@link java.util.concurrent.TimeoutException}
+	 * Warning: {@link reactor.test.StepVerifier.LastStep#verifyTimeout(Duration)} doesn't verify {@link java.util.concurrent.TimeoutException}
 	 */
 	@Test
 	public void timeout() throws Exception {

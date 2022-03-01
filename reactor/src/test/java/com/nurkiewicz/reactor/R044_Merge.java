@@ -15,11 +15,15 @@ import reactor.test.StepVerifier;
 
 import static java.time.Duration.ofMillis;
 
-@Ignore
+
 public class R044_Merge {
 
 	private static final Logger log = LoggerFactory.getLogger(R044_Merge.class);
 
+	/**
+	 * Subskrybuje się na każdym ze strumieni i emituje zdarzenia niezależnie. To odróżnia go od zip() (bo ten
+	 * emituje parę)
+	 */
 	@Test
 	public void mergeCombinesManyStreams() throws Exception {
 		//given
@@ -65,7 +69,7 @@ public class R044_Merge {
 	/**
 	 * TODO Fetch data from first available cache server.
 	 *
-	 * BTW this can also be achieved using {@link Mono#firstWithSignal(reactor.core.publisher.Mono[])}
+	 * BTW this can also be achieved using {@link Mono#firstWithSignal(Mono[])}
 	 * @see Flux#mergeWith(Publisher)
 	 * @see Flux#next()
 	 */
@@ -76,7 +80,11 @@ public class R044_Merge {
 		final Mono<String> sv = second.findBy(42);
 
 		//when
-		Mono<String> fastest = null; // TODO
+		//Mono<String> fastest = Mono.firstWithSignal(fv,sv);
+		//jeśli któryś skończy się błędem to błąd też zostanie spropagowany, jest inna metoda first() która łyka błedy
+
+		//alternatywa - zmerguj dwa sygnały i weź ten który jest pierwszy
+		Mono<String> fastest=Flux.merge(fv,sv).next();
 
 		//then
 		fastest

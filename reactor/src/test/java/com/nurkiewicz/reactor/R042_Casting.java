@@ -11,7 +11,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R042_Casting {
 
 	private static final Logger log = LoggerFactory.getLogger(R042_Casting.class);

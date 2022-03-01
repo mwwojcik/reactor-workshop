@@ -24,7 +24,7 @@ import static java.time.Month.JANUARY;
 import static java.time.Month.MARCH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R031_FlatMap {
 
 	private static final Logger log = LoggerFactory.getLogger(R031_FlatMap.class);
@@ -51,6 +51,19 @@ public class R031_FlatMap {
 		//when
 		final Flux<Order> orders = USERS.flatMap(user -> UserOrders.lastOrderOf(user));
 
+		/*
+		* merge w d
+		* flatMap pod spodem wykonuje dwie operacje : proste mapowanie (na kazdym z 1000 integerow wywoła metodę
+		* loadUser(), po wyjściu mamy 1000 Mono, flatmap potem wykonuje merge, czyli subskrybuje się jednocześnie do
+		* 1000 strumieni Mono, i jak one się będą kończyły - one iterują się po wszystkich strumieniach wewnątrz.
+		*
+		* Flux<Integer userIDS - x1000
+		* Mono<User> loadUser(int id);
+		* userIds.flatMap(this::loadUser)
+		*
+		* FlatMap świetnie nadaje się do zrównoleglenia bo wszystkie strumienie naraz się wykonują,
+		* flatmap jest lazy, on się wykona jak zasubskrybujemy się na x
+		* */
 		//then
 		orders
 				.as(StepVerifier::create)
@@ -70,8 +83,11 @@ public class R031_FlatMap {
 		//given
 
 		//when
-		final Flux<Item> items = null;  //USERS.flatMap...
 
+		final Flux<Item> items =
+				USERS.flatMap(user -> UserOrders.lastOrderOf(user)).flatMap(o->Flux.fromIterable(o.getItems()));
+		//USERS
+		// .flatMap...
 		//then
 		items
 				.as(StepVerifier::create)
@@ -92,7 +108,10 @@ public class R031_FlatMap {
 		final Flux<Mono<Order>> nested = USERS.map(UserOrders::lastOrderOf);
 
 		//when
-		Flux<Order> orders = null;  //TODO nested...
+		//nestted jest strumieniem którego elementami jest Mono, z flatMapy trzeba zwrócić Mono albo Flux
+		//można wywołać mono.toFlux(), ale również można zmienić mono->mono, na kazdym z tych mono które wejdą
+		//operator flatMap zasubskrybuje się i połączy do jednego dużego fluxa orderów
+		Flux<Order> orders = nested.flatMap(mono-> mono);
 
 		//then
 		orders

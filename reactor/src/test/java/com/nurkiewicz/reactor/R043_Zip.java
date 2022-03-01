@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R043_Zip {
 
 	private static final Logger log = LoggerFactory.getLogger(R043_Zip.class);
@@ -156,3 +156,38 @@ public class R043_Zip {
 	}
 
 }
+
+/*
+Page makePage(Ads ads, Article article, Header header,
+				Footer footer, Tags tags, Next next);
+
+Mono<Page> x = Mono.zip(
+	loadAds(),
+	fetchArticle(),
+	composeHeader(),
+	composeFooter(),
+	guessTags(),
+	recommendNext(),
+		(ads, art, head, foot, tags, next) ->
+			makePage(ads, art, head, foot, tags, next)
+
+		makePage() wykona się dopiero wtedy gdy zakonczone zostaną wszystkie wywołania zrobiony zostanie touple  z 6
+		eleemntami i będziemy mieli dostęp do rozpakowanych każdego z osobna
+
+	Kłopoty mogą być gdy któryś z elementów zwróci puste mono
+
+	Mono<Page> x = Mono.zip(
+	loadAds(),
+	fetchArticle(),
+	composeHeader(),
+	composeFooter(),
+	guessTags()
+		.switchIfEmpty(Mono.just(new Tags()))
+		.timeout(ofMillis(500)),
+	recommendNext(),
+	this::makePage)
+
+Jeśli któryś ze strumieni kończy się błędem to cały strumień kończy się błędem dlatego warto stosować callbacks
+
+
+* */

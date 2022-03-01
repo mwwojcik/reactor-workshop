@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R025_ReadingFileFromStream {
 
 	private static final Logger log = LoggerFactory.getLogger(R025_ReadingFileFromStream.class);
@@ -27,7 +27,13 @@ public class R025_ReadingFileFromStream {
 	@Test
 	public void readFileAsStreamOfLines() throws Exception {
 		//when
-		final Flux<String> lines = null;
+		//czytamy plik w postaci fluxa, można czytać go partiami, np. pliki z logami
+		//nie trzeba go czytać w całości. BufferedReader.lines zwraca stream javowy,
+		//gdy zmienimy go na flux to możemy korzystać z bogatego api fluxa
+		//jeśli nikt nie poprosi
+		//UWAGA! gdy podłączy się drugi subskrybent to open jest wykonywany DRUGI RAZ
+
+		final Flux<String> lines = Flux.fromStream(()->open("/logback-test.xml").lines());
 
 		//then
 		final Long count = lines
@@ -50,7 +56,11 @@ public class R025_ReadingFileFromStream {
 	@Test
 	public void readingFileShouldBeLazy() throws Exception {
 		//when
-		final Flux<String> lines = notFound();
+		//hack na źle zrobiony Mono lub Flux - ostatnia deska ratunku
+		//gdy mono lub flux zwracany nie jest leniwy
+		//sposob na uleniwienie
+		//dzięki temu wyjatek poleci dopiero przy skorzystaniu
+		final Flux<String> lines = Flux.defer(()->notFound());
 
 		//then
 		lines
@@ -60,6 +70,11 @@ public class R025_ReadingFileFromStream {
 
 	/**
 	 * Don't change this method!
+	 * UWAGA! zwraca gorliwego FLUXA
+	 *
+	 * Mono.defer(()->Mono.jus(heavyRestApi())
+	 * Mono.fromCallable(()->heavyRestApi())
+	 * te dwie formy są prawie równorzędne, druga bardziej naturalna i praota
 	 */
 	private Flux<String> notFound() {
 		return Flux.fromStream(open("404.txt").lines());

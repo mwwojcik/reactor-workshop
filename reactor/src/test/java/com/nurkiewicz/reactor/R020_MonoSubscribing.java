@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R020_MonoSubscribing {
 
 	private static final Logger log = LoggerFactory.getLogger(R020_MonoSubscribing.class);

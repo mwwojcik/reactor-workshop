@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 import static java.time.Duration.ofNanos;
 import static java.time.Duration.ofSeconds;
 
-@Ignore
+
 public class R060_TransformCompose {
 
 	private static final Logger log = LoggerFactory.getLogger(R060_TransformCompose.class);

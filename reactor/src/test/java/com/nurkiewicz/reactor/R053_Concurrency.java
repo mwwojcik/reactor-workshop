@@ -22,7 +22,7 @@ import reactor.util.function.Tuples;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R053_Concurrency {
 
 	private static final Logger log = LoggerFactory.getLogger(R053_Concurrency.class);

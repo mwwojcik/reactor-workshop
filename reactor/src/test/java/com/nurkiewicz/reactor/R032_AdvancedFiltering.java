@@ -21,7 +21,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@Ignore
+
 public class R032_AdvancedFiltering {
 
 	private static final Logger log = LoggerFactory.getLogger(R032_AdvancedFiltering.class);
@@ -71,6 +71,10 @@ public class R032_AdvancedFiltering {
 				.verifyComplete();
 	}
 
+	/*
+	* UWAGA ! wywołanie map(it->callRest(it)) - jest niepoprawne bo blokujące wątek
+	* wszystko co jest w map, filter ta lambda jest jednowątkowa!
+	* */
 	@Test
 	public void operatorsAreSingleThreaded() throws Exception {
 		//given
@@ -116,13 +120,32 @@ public class R032_AdvancedFiltering {
 	 *     Hint: you will need {@link Flux#flatMap(Function)} and inner {@link Mono#filter(Predicate)}
 	 * </p>
 	 */
+
+	class MyTouple {
+		public String word;
+		public String hashcode;
+
+	}
 	@Test
 	public void implementAsyncFilteringUsingFlatMap() throws Exception {
 		//given
 		final Flux<String> words = Flux.just(LoremIpsum.words());
 
 		//when
-		final Flux<String> filtered = words;
+		//final Flux<String> filtered = words.filter(s -> asyncSha256(s));
+		//uwaga w metodzie filter zawsze zwracane jest mono, nawet jeśli hash nie spełnia warunku, metoda filter wołana
+		//na mono też zwraca stream tylko że PUSTY bo Mono też jest strumieniem a nie zwykłym obiektem, potem zwykłe
+		// mapowanie na word bo cały czas jesteśmy we flatMap
+		//mozna zrobic tak:
+		//words.flatMap(word->
+				//asyncSha256(word)
+					//filter(hashCode->hashCOde.toString().startsWith("0"))
+						//.map(ignored->word))
+		//należy pamiętać że flatMap najpierw zawołą szybciutki kod metody asyncSha256(word) - która nie robi żadnej
+		// logiki , tylko tworzy wiele małych mono, flatmap potem weźmie i zawoła naraz wszystkie mono , dostaliśmy
+		// więc zrównoleglenie
+ 		final Flux<String> filtered =
+				words.flatMap(word->asyncSha256(word).filter(it-> it.toString().startsWith("0")).map(hash->word));
 
 		//then
 		filtered
@@ -143,8 +166,13 @@ public class R032_AdvancedFiltering {
 		//given
 		final Flux<String> words = Flux.just(LoremIpsum.words());
 
+		//mamy 100 użytkowników i musimy naraz dowiedzieć się czy to są super sprzedawcy naraz i nie możemy
+		// skorzystać z batchowego wywołania. Możemy skorzystać z filterWhen.
+		//gdy Mono<Boolean> isSuper() zwraca Mono<Boolean>
+
 		//when
-		final Flux<String> filtered = words;
+		//filterWhen to taki flatMap tylko wymuszający Mono<Boolean>
+		final Flux<String> filtered = words.filterWhen(it->asyncSha256(it).map(mono->it.contains("0")));
 
 		//then
 		filtered

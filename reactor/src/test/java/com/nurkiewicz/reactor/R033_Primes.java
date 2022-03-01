@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class R033_Primes {
 
 	private static final Logger log = LoggerFactory.getLogger(R033_Primes.class);

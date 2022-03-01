@@ -16,7 +16,7 @@ import static java.time.Duration.ofMillis;
 import static org.assertj.core.api.Assertions.assertThat;
 import static reactor.util.function.Tuples.of;
 
-@Ignore
+
 public class R047_TimestampIndex {
 
 	private static final Logger log = LoggerFactory.getLogger(R047_TimestampIndex.class);

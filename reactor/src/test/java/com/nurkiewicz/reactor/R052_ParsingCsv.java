@@ -15,7 +15,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
 
-@Ignore
+
 public class R052_ParsingCsv {
 
 	private static final Logger log = LoggerFactory.getLogger(R052_ParsingCsv.class);

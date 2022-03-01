@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.hasSize;
 
-@Ignore
+
 public class R023_CallbackToFlux {
 
 	private static final Logger log = LoggerFactory.getLogger(R023_CallbackToFlux.class);

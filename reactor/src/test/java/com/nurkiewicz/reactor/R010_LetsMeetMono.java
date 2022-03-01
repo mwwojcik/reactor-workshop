@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 
-@Ignore
+
 public class R010_LetsMeetMono {
 
 	/**
@@ -19,9 +19,14 @@ public class R010_LetsMeetMono {
 	@Test
 	public void helloMono() throws Exception {
 		//given
+		//Mono.just to wydmuszka w api tylko wtedy gdy rezultat jest bardzo bardzo tani
+		//Mono.just(restTemplate.get(url) - Mono zostanie stworzone gdy get się skończy
+		//czyli jest BLOKUJĄCE
+
 		final Mono<String> reactor = Mono.just("Reactor");
 
 		//when
+		//używaj tylko wtedy gdy testy lub połączeni z kodem blokującym
 		final String value = reactor.block();
 
 		//then
@@ -86,9 +91,13 @@ public class R010_LetsMeetMono {
 		final Mono<Integer> lazy = Mono.fromCallable(() -> counter.incrementAndGet());
 
 		//when
+		//pytamy się dwukrotnie i mono również odpali się dwukrotnie
 		final Integer first = lazy.block();
 		final Integer second = lazy.block();
 
+		/*
+		* trzeba uważać bo np. wysyłamy komuś maila więc jeśli dwa razy to zrobimy to możemy wysłać dwukrotnie maila
+		* */
 		//then
 		assertThat(first).isEqualTo(1);
 		assertThat(second).isEqualTo(2);
@@ -101,10 +110,12 @@ public class R010_LetsMeetMono {
 	public void cachingMonoComputesOnlyOnce() throws Exception {
 		//given
 		AtomicInteger counter = new AtomicInteger();
-		final Mono<Integer> lazy = Mono.fromCallable(counter::incrementAndGet);
+		final Mono<Integer> lazy = Mono.fromCallable(counter::incrementAndGet).cache();
 
 		//when
+		//tu uruchamia się kod dla 1 osoby
 		lazy.block();
+		//ta osoba dostaje to co pierwsza
 		lazy.block();
 
 		//then

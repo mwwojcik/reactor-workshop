@@ -11,7 +11,7 @@ import reactor.test.StepVerifier;
 import java.math.BigInteger;
 import java.util.function.BiFunction;
 
-@Ignore
+
 public class R071_Reduce {
 
     private static final Logger log = LoggerFactory.getLogger(R071_Reduce.class);

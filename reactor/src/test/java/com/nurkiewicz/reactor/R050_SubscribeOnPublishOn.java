@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
-@Ignore
+
 public class R050_SubscribeOnPublishOn {
 
 	private static final Logger log = LoggerFactory.getLogger(R050_SubscribeOnPublishOn.class);
