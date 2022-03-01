@@ -6,7 +6,7 @@ Spring [Reactor](https://projectreactor.io) hands-on training (3 days)
 
 See also [workshop notes](https://nurkiewicz.com/slides/reactor-workshop).
 
-## Day 1: Introduction
+## Day 1: Introduction test
 
 - What is reactive programming
 - Crash course to `CompletableFuture` and thread pools
