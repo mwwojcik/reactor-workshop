@@ -13,7 +13,14 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import reactor.util.function.Tuple2;
 
+/*
+scan również redukuje jak reduce ale każdą cząstkową cząstkę akumulatora emituje, można go zatem używać na
+strumieniach nieskończonych można interpretować poszczególne elementy.
 
+scan().last() = reduce()
+
+
+ */
 public class R072_Scan {
 
     private static final Logger log = LoggerFactory.getLogger(R072_Scan.class);

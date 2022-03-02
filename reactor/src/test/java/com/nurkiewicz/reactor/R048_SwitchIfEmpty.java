@@ -5,6 +5,11 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+Ważny operator który zamienia pusty strumień w niepusty.
+Przydatny w sytuacji gdy gdzieś pojawi się puste mono. Normalnie byłoby ono przepropagowane, ale nie odpalą się inne
+operatory. Może to skutkować pustą stroną.
+ */
 
 public class R048_SwitchIfEmpty {
 

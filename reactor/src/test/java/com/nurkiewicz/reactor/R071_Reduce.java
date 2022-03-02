@@ -17,6 +17,11 @@ public class R071_Reduce {
     private static final Logger log = LoggerFactory.getLogger(R071_Reduce.class);
     public static final String FACTORIAL_100 = "93326215443944152681699238856266700490715968264381621468592963895217599993229915608941463976156518286253697920827223758251185210916864000000000000000000000000";
 
+    /*
+    Reduce kończy się wtedy gdy kończy się strumień,
+    jest leniwy i zwraca Mono
+    final Mono<Integer> sum = nums.reduce(...)
+     */
     @Test
     public void sumUsingReduce() throws Exception {
         //given

@@ -1,15 +1,9 @@
 package com.nurkiewicz.reactor;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-
 import com.nurkiewicz.reactor.domains.Domain;
 import com.nurkiewicz.reactor.domains.Domains;
 import com.nurkiewicz.reactor.domains.Tld;
 import com.nurkiewicz.reactor.user.LoremIpsum;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +11,12 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.GroupedFlux;
 import reactor.test.StepVerifier;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +27,9 @@ public class R061_GroupBy {
 
     private static final Logger log = LoggerFactory.getLogger(R061_GroupBy.class);
 
+    /*
+     Podział na podstrumienie według określonego klucza. Pozwala na robienie w czasie rzeczywistym sumowania.
+    * */
     @Test
     public void groupWordsByLength() throws Exception {
         //given
@@ -90,14 +93,14 @@ public class R061_GroupBy {
     /**
      * TODO Count total number of linking root domains ({@link Domain#getLinkingRootDomains()}) to each TLD ({@link Domain#getTld()}
      * Sort from most to least number of linking root domains.
-     *
+     * <p>
      * If it was SQL:
      *
      * <code>
-     *   SELECT d.tld, SUM(linking_root_domains) AS s
-     *   FROM domains d
-     *   GROUP BY d.tld
-     *   ORDER BY s DESC
+     * SELECT d.tld, SUM(linking_root_domains) AS s
+     * FROM domains d
+     * GROUP BY d.tld
+     * ORDER BY s DESC
      * </code>
      *
      * @see Domain#getTld()
@@ -107,13 +110,32 @@ public class R061_GroupBy {
      * @see Flux#sort(Comparator)
      * @see Comparator#comparing(Function)
      */
+    /*
+    * Jeśli nie wiemy z którego map() trzeba zrobić flatMap() to wybierzmy tego mapa który zwraca typ reaktywny
+    * */
     @Test
     public void countDomainsInTld() throws Exception {
         //given
         final Flux<Domain> domains = Domains.all();
 
         //when
-        final Flux<Tuple2<Tld, Long>> tldToTotalLinkingRootDomains = null; //TODO
+        final Flux<Tuple2<Tld, Long>> tldToTotalLinkingRootDomains =
+                domains
+                        .groupBy(d -> d.getTld())
+                        //Będziemy mieli tyle Flux ile mamy tld, musimy działać w każdej grupie z osobna
+                        //trzeba zrobić mapowanie
+                        .flatMap(group ->
+                                //obracamy się w ramach strumienia domen,
+                                //sumujemy liczbę root domen prowadzących dla danego tld
+                                group.reduce(0L, (acc, domain) -> acc + domain.getLinkingRootDomains())
+                                        .map(it -> Tuples.of(group.key(), it))
+                        ).sort(Comparator.comparing(Tuple2::getT2,Comparator.reverseOrder()));
+
+                                /*
+                                Można tak: map(Domain::getLinkedRootDomains)
+                                .reduce(Long::sum)
+                                .map(sum->Tuples.of(gropu.key(),sum))
+                                 */
 
         //then
         tldToTotalLinkingRootDomains

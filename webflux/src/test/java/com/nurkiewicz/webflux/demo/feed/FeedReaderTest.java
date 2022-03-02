@@ -13,7 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@Ignore
+
 public class FeedReaderTest extends IntegrationTest {
 
     @Test

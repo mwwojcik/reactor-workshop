@@ -17,7 +17,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class R051_WhatIsAscheduler {
-
+/*
+* Scheduler jest opakowaniem javowej puli wątków. W klasie Schedulers są metody fabrykujące. Najlepsze jest
+* newBoundedElastic(ile wątków, ile zadań w kolejce może czekać, nazwa) - używać bardziej do IO
+* newParallel - do zadań zablokowanych tylko na procesorze, kompresja, kryptografia, kodowanie multimediów, wątki w
+* tej puli mają flagę która pozwala narzędziom diagnostycznym wykrycie że następiło zakleszczenie. Jest to normalne
+* dla wątków BoundedElastic - IO bo mogą wisieć na sockecie. Jest to niedopuszcalne dla newParallel().
+* Nigdy nie tworzyć puli wewnątrz subscribeOn - raczej jako bean springowy.
+* Nie używać:
+* boundedElastic() - nazwa myląca , nie jest elastic - nie używać bo jest zależna od listy corów, niemonitorowana
+* parallel() - z nich korzysta reaktor - jak się zagłodzi to przestanie działać
+* */
 	private static final Logger log = LoggerFactory.getLogger(R051_WhatIsAscheduler.class);
 
 	/**

@@ -15,7 +15,14 @@ import static reactor.core.publisher.Sinks.EmitResult.OK;
 public class R090_Sinks {
 
 	private static final Logger log = LoggerFactory.getLogger(R090_Sinks.class);
-
+/*
+* Bierzemy sinka i wrzucamy coś do niej, "spuszczamy w zlewie", wkładamy do niego wartości, a
+* klienci mogą je czytać w postaci Flux()
+*
+* replay() - czas zapamiętywania
+*
+* hermes robi push,
+* */
 	@Test
 	public void sinksManyUnicast() throws Exception {
 		final Sinks.Many<Integer> sink = Sinks.many().unicast().onBackpressureBuffer();

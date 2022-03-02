@@ -15,7 +15,10 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 import reactor.tools.agent.ReactorDebugAgent;
 
-
+/*
+* BlockHound - jest zaawansowanym narzędziem która potrafi analizować bardzo głębokie wywołanie , potrafi znaleźć
+* miejsca gdzie pojawia nam się przypadkowo kod blokujący. Jest w stanie analizwać bardzo złożone zależności.
+* */
 public class R081_Debugging {
 
 	private static final Logger log = LoggerFactory.getLogger(R081_Debugging.class);

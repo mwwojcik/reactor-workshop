@@ -15,6 +15,10 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+/*
+działa podobnie jak flatMap czyli wykonuje jakąś funkcję dla każdego elementu w strumieniu a dodatkowo, dla każdego
+elementu zwróconego wywoła rekurencyjnie tą funkcję
+ */
 
 public class R073_Expand {
 
@@ -32,9 +36,14 @@ public class R073_Expand {
         //then
         expanded
                 .as(StepVerifier::create)
+                //zaczynamy od oryginalnego
                 .expectNext("Reactor")
+                //dostajemy dwie połowki (tak jak flat map)
                 .expectNext("Rea")
+                //druga połowka
                 .expectNext("ctor")
+                //teraz następuje działanie specyficzne dla expand, rekurencyjne zagłębienie się w kolejne słowa
+                //aż do osiągnięcia słów jednoznakowych
                 .expectNext("R")
                 .expectNext("ea")
                 .expectNext("ct")
@@ -113,7 +122,14 @@ public class R073_Expand {
         final URI init = new URI("https://google.com");
 
         //when
-        final Flux<URI> allUris = null; // TODO
+        /*
+        * flatMap dla każdego wejściowego uruchamia naszą metodę
+        * final Flux<URI> allUris =Flux.just(init).flatMap(Crawler::outgoingLinks);
+        * jednak zwraca to tylko linki dla jednego urla, a chcielibyśmy crowlować
+        * żeby uzyskać rekurencję flatMap zastępujemy expandem,
+        * każdy link wyjściowy staje się wejściem do metody outgoingLinks
+        * */
+        final Flux<URI> allUris =Flux.just(init).expand(Crawler::outgoingLinks);
 
         //then
         allUris

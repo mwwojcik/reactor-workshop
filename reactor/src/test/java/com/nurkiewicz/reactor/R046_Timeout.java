@@ -1,6 +1,7 @@
 package com.nurkiewicz.reactor;
 
 import java.time.Duration;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 
 import com.nurkiewicz.reactor.samples.CacheServer;
@@ -97,9 +98,22 @@ public class R046_Timeout {
 		CacheServer first = new CacheServer("foo", ofSeconds(1), 0);
 		CacheServer second = new CacheServer("bar", ofMillis(100), 0.5);
 
-		//when
-		final Mono<String> response = null;
 
+		Mono firstMono = first.findBy(1);
+		Mono secondMono = second.findBy(2).delaySubscription(ofMillis(200)).onErrorResume((e)->Mono.never());
+
+
+		final Mono<String> response = Mono.firstWithValue(firstMono,secondMono);
+		/*final Mono<String> response =
+				Mono.firstWithSignal(
+						first
+								.findBy(1),
+						second
+								.findBy(1)
+								.doOnError((e) -> System.out.println(e.getMessage()))
+								.retry(50)
+								.delaySubscription(ofMillis(200))
+				);*/
 		//then
 		response
 			.as(StepVerifier::create)
