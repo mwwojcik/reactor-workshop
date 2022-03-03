@@ -83,3 +83,93 @@ TESTCONTAINERS_RYUK_DISABLED=true
 ```
 
 See: [Disabling Ryuk](https://www.testcontainers.org/features/configuration/#disabling-ryuk)
+
+## Webflux
+### Wstęp
+Nieblokujące api, gdy mamy połączenie na sockecie możemy w łatwy tani sposób odpytywać czy na którymś sockecie nie 
+pojawiły się dane. Możemy mieć kilka tysięcy połączeń, oraz kilka wątków które sprawdzają czy na socketach nie 
+pojawiły się dane. 
+W klasycznym modelu na połączenie potrzebujemy jednego wątku. Czyli dla 10k połączeń potrzebujemy 10k wątków (czyli 
+ok 1 GB ramu ~ 1 MB per wątek), czyli 10 k tasków systemu operacyjnego.
+
+Połączenie nieblokujące - pod spodem nie używa socketów na których trzeba stać i czekać, tylko korzysta ze zdarzeń 
+że na sockecie pojawiło się dane. Informacje przesyła system.
+
+Z poziomu Linuxa, otwarte połączenie sieciowe to deskryptor pliku (struktura danych w SO mówiąca o połączeniu z 
+danym hostem) + bufor odpow. za wysyłanie i odbieranie to ok 1KB+bufor. To jest wszystko, reszta to aplikacja. Po 
+stronie SO nie trzeba utrzymywać żadnych wątków do obsługi.
+
+Przychodzi do serwera paczka danych TCPIP, karta go odbiera i informuje SO że przyszła paczka z takiego hosta, SO 
+wyszukuje socket, znajduje proces i przesyła te dane, przy nieblokujące java api (NIO) dostaje zdarzenie że coś się 
+pojawiło, jesteśmy już po stronie JVM . Java NIO jest bardzo niskopoziomowa więc wchodzi w grę biblioteka Netty, 
+bardzo rozpowszechniona, nakładka na sockety. Mówi że na tym sockecie pojawiło się zdarzenie. W Netty odbiera się 
+żywe tablice, paczki dane. Netty dostarcza abstrakcji zamieniające bajty , pakiety w stringi i coraz większe 
+abstrakcje. Przy pomocy pipelineów można stworzyć bardzo wydajny serwerek. 
+Na bazie Netty Reactor zbudował swoją abstrakcję Reactor-Netty, która zamienia strumienie bajtowe, tworzy abstrakcje
+reaktywne Flux i Netty. Dopiero na tym jest zbudowany WebFlux. 
+
+Nie ma żadnego klasycznego serwera obsługującego http, jetty tomcat, w aplikacji webflux nie ma nawet zależności do 
+sewletów. 
+
+Klasycznie: odbieramy połączenie, potem dedykowany wątek, najpierw był dispatcher, potem kontroler , potem serwisy, 
+repozytoria, gdy wracalismy do kontrolera, potem serwlet, potem zamiana na bajty i dopiero wątek był zwalniany. 
+
+Prawo Little'a : Mówi o szacowaniu ilości potrzebnych wątków workerów na podstawie średniego czasu odpowiedzi i 
+ilości ruchu. To prawo ma konsekwencję . Jeśli czas odpowiedzi jednego z komponentów wzsrasta przekłada się na 
+mniejszy ruch obsługiwany. To że odpowiadamy wolniej to oczywiste, ale dlaczego możemy przyjąć mniej ruchu ? To nie 
+jest oczywiste. Serwery klasyczne dłużej wiszą, dłużej czeka, nie wykonuje więcej pracy , on nic nie robi, czeka na 
+wolniejszy komponent, ale z zewnątrz nei obsługuje ruchu. Aplikacja nie robi nic więcej a przepustowość znacząco 
+spada. Wisimy na sockecie. Ten problem próbuje rozwiązać webflux. 
+jesteśmy zdarzeniowi, mamy kilka wątków np. 4 , np. wychodzą dane do wolnego komponentu ,wątek biegnie dalej,  wątek 
+wybudza się gdy 
+dostanie info że przyszły dane np. po 2 sekundach wątek to rejestruje i przesyła odpowiedź. Ale w tym czasie nie 
+czeka tylko obsługuje innych.
+Webflux nie sprawi że aplikacja będzie szybsza bo baza i tak nie odpowie szybciej. Ale jednocześnie może być 
+obsłużona dużo większa ilość klientów. 
+
+Webflux RestController zwraca mono ale jest on niezasubskrybowany, zwracamy mono/flux ale odczytaniem zajmuje się 
+już Spring. Jedyne co musi zrobić to stworzyć leniwego Mono, samo tworzenie leniwego mono to jest mikroskopijny czas, 
+WebFlux dzięki temu może stworzyć takich Mono mnóstwo na jednym wątku.
+
+Kontroler zwraca tylko "przepis" deklaracja co ma się wykonać . Algorytm ten wywołany zostanie zupełnie w innym 
+momencie, już poza kontrolerem przez Springa.
+
+Z perspektywy klienta to wygląda jak czyste http. Wystawiane są endpointy. Wszystko jest zgodne z HTTP.  
+
+W przypadku Flux skończonego uderzenie na takiego endpointa zwrócona zostanie tablica. 
+
+W przypadku Flux nieskończonego zaczyna się problem. Pod spodem WebFlux czeka aż flux się skończy. To nie zadziała. 
+Ale dorzucenie nagłówka Server-Sett Event . Wysłałem żądanie i serwer będzie przez nieskończony czas będzie dosyłał 
+mi odpowiedzi.  Dane się dosyłają w nieskończoność. 
+
+Bezstanowość nie ma prawa pamiętać stanu. Tu nie ma request i response za każdym razem. Tu jest jeden REQUEST i 
+jeden RESPONSE tylko połązenie jest bardzo bardzo, bardezo długie, w skrajnym przypadku nieskończone.  
+
+Na jednego requesta otwierane jest połączenie i jest ono trzymane a do połączenia jest wrzucany wynik flux.
+Gdyby klient miał timeout założony na zwykłe połączenia to ono by się stimeaoutowało.
+
+Jeśli chodzi o webflux problem 10k - czy na tej technologii można napisać aplikację obsługującą 10K połączeń. Na 
+zwykłym tomcacie to jest niemożliwe bo wymaga 10 tysięcy wątków. Dla Webflux to jest bardzo proste. 
+
+Jeśli uderzymy w endpoint zwracający Fluxa z błędem to dostanie jsona z błędem.
+
+Można zwrócić w Mono / Flux ResponseEntity, wtedy można kontrolować zwrócone nagłówki. 
+
+
+### WebClient
+
+* RestTemplate - klasyczny klient http , wrapper na inne klienty - nie jest deprecated, ale nie będzie rozwijany
+* AsyncRestTemplate - RestTemplate opakowany w pulę wątków , blokujący ale odpalony w osobnym wątku - jest Deprecated
+* WebClient - asynchroniczny 
+
+
+* **asynchroniczny** - dzieje się w tle
+* **nieblokujący** - asynchroniczny - nie istnieje żaden wątek w systemie czekający na odpowiedź klienta
+
+Przez WebFlux możemy się poołączyć do endpointa typu SSE, i zrobienie bodyToFlux spowoduje zamianę na fluxa. 
+WebClient zwraca body lub flux czyli stają się źródłem mono lub flux. Na tym można robić dowolne operacje i stosować 
+operatory. 
+
+**Nigdy się nie blokujemy i nigdy się nie subskrybujemy.**
+
+
