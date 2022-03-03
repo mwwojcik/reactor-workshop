@@ -17,15 +17,19 @@ public class EchoHandler implements WebSocketHandler {
 	@Override
 	public Mono<Void> handle(WebSocketSession session) {
 		Flux<WebSocketMessage> outMessages = session
+				//zwraca strumień wiadomości przychodzących - flux wiadomości przychodzących
 				.receive()
 				.doOnSubscribe(s -> log.info("[{}] Got new connection", session.getId()))
+				//rozpakowuję message do tekstu
 				.map(WebSocketMessage::getPayloadAsText)
 				.doOnNext(x -> log.info("[{}] Received: '{}'", session.getId(), x))
 				.map(String::toUpperCase)
 				.doOnNext(x -> log.info("[{}] Sending '{}'", session.getId(), x))
 				.map(session::textMessage)
+				//sztuczne opóxnienie
 				.delaySequence(Duration.ofSeconds(1));
 		return session
+				//cały strumień odsyłam do przeglądarki, strumień jest "tak jakby zawracany"
 				.send(outMessages)
 				.doOnSuccess(v -> log.info("[{}] Done, terminating the connection", session.getId()));
 	}
