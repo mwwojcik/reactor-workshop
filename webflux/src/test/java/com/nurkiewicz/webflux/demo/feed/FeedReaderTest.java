@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nurkiewicz.webflux.demo.IntegrationTest;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Mono;
 
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,10 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class FeedReaderTest extends IntegrationTest {
 
+    @Autowired
+    WebClient webClient
+
     @Test
     public void testGetAsync() throws MalformedURLException {
         //given
-        Mono<String> htmlMono = new FeedReader().getAsync(new URL("http://www.example.com"));
+        Mono<String> htmlMono = new FeedReader(webClient).getAsync(new URL("http://www.example.com"));
 
         //when
         String html = htmlMono.block();

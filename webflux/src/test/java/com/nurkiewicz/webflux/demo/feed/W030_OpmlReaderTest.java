@@ -12,7 +12,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * TODO (1) Return {@link OpmlReader#allFeeds()} as {@link Flux} in {@link OpmlReader#allFeedsStream()}, lazily
  */
-@Ignore
 public class W030_OpmlReaderTest {
 
 	@Test

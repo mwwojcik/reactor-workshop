@@ -1,5 +1,6 @@
 package com.nurkiewicz.webflux.demo.feed;
 
+import javax.annotation.PostConstruct;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.net.URL;
@@ -27,12 +28,18 @@ public class FeedAggregator {
     /**
      * TODO (4) Read all feeds and store them into database
      * TODO (5) Repeat periodically, do not store duplicates
+     *
+     *
      */
-//    @PostConstruct
+    @PostConstruct
     public void init() throws IOException, FeedException, SAXException, ParserConfigurationException {
-        final String feed = opmlReader.allFeeds().get(0).getXmlUrl();
+       /* opmlReader.allFeedsStream()
         feedReader.fetch(new URL(feed)).forEach(e -> {
             log.info("{}: {} at {}", e.getPublishedDate(), e.getTitle(), e.getLink());
-        });
+        });*/
     }
 }
+
+//uwaa save na repository - koniecznie trzeba się zasubskrybować na mono ktore zwraca bo nie zapisze
+//dlatego nie może być w map() musi być flatMap() bo flatMap się subskrybuje
+//kazdy blog może być pobierany z innym interwałem

@@ -16,6 +16,7 @@ import reactor.core.publisher.Flux;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 public class OpmlReader {
@@ -26,10 +27,10 @@ public class OpmlReader {
         this.feedFile = feedFile;
     }
 
-    public Flux<Outline> allFeedsStream() {
-        return Flux.empty();
-    }
 
+    public Flux<Outline> allFeedsStream(){
+        return Mono.fromCallable(this::allFeeds).flatMapIterable(it->it);
+    }
     public List<Outline> allFeeds() throws FeedException, IOException {
         WireFeedInput input = new WireFeedInput();
         try(final InputStream inputStream = OpmlReader.class.getResourceAsStream(feedFile)) {
@@ -40,4 +41,12 @@ public class OpmlReader {
         }
     }
 
+    /*
+    Napisać taką wersję tej metody by zwracała Fluxa leniwego
+
+    Mono jest
+    1. asynchroniczna
+    2. trochę jak optional
+    3. operacja koncząca sie wyjątkami
+     */
 }
